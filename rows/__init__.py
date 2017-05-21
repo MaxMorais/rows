@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import rows.plugins as plugins
 
 from rows.operations import join, transform, transpose
-from rows.table import Table, FlexibleTable
+from rows.table import FlexibleTable, LazyTable, Table
 from rows.localization import locale_context
 
 
