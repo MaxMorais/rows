@@ -78,4 +78,5 @@ def transpose(table, fields_column, *args, **kwargs):
 
     table_rows = [[row[field_name] for field_name in field_names]
                   for row in new_rows]
+    kwargs['lazy'] = False
     return create_table([field_names] + table_rows, *args, **kwargs)

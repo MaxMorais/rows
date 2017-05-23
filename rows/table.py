@@ -193,6 +193,7 @@ class Table(MutableSequence):
         return table
 
     def order_by(self, key):
+        # TODO: may rename to `sort`
         # TODO: implement locale
         # TODO: implement for more than one key
         reverse = False

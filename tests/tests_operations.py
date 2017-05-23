@@ -38,7 +38,7 @@ class OperationsTestCase(utils.RowsTestMixIn, unittest.TestCase):
                   rows.import_from_csv('tests/data/to-merge-2.csv'),
                   rows.import_from_csv('tests/data/to-merge-3.csv'),]
         merged = rows.join(keys=('id', 'username'), tables=tables)
-        expected = rows.import_from_csv('tests/data/merged.csv')
+        expected = rows.import_from_csv('tests/data/merged.csv', lazy=False)
         self.assert_table_equal(merged, expected)
 
     def test_transform_imports(self):
