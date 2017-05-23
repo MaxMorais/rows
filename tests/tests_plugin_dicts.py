@@ -17,15 +17,21 @@
 
 from __future__ import unicode_literals
 
+import string
+import random
 import tempfile
 import unittest
 
+from collections import OrderedDict
 from io import BytesIO
 
 import mock
 
 import rows
 import rows.plugins.dicts
+
+from rows.table import LazyTable
+
 import tests.utils as utils
 
 
@@ -54,10 +60,12 @@ class PluginDictTestCase(utils.RowsTestMixIn, unittest.TestCase):
 
         call = mocked_create_table.call_args
         kwargs['meta'] = {'imported_from': 'dicts', }
+        kwargs['lazy'] = True
+        kwargs['samples'] = 1000
         self.assertEqual(call[1], kwargs)
 
     def test_import_from_dicts_return_desired_data(self):
-        table = rows.import_from_dicts(self.data)
+        table = rows.import_from_dicts(self.data, lazy=False)
 
         self.assertEqual(len(table), 3)
         self.assertEqual(len(table.fields), 4)
@@ -81,8 +89,35 @@ class PluginDictTestCase(utils.RowsTestMixIn, unittest.TestCase):
         self.assertEqual(table[2].number, None)
         self.assertEqual(table[2].other, 3.14)
 
+    def test_import_from_dicts_lazy(self):
+        max_size = 1000
+        samples = 200
+        generator = utils.LazyDictGenerator(max_size)
+        datagen = iter(generator)
+        table = rows.import_from_dicts(datagen, samples=samples)
+        self.assertTrue(isinstance(table, LazyTable))
+        self.assertEqual(generator.last, samples - 1)
+
+        data = list(table)
+        self.assertTrue(len(data), max_size)
+        self.assertEqual(generator.last, max_size - 1)
+
+    def test_import_from_dicts_maintains_header_order(self):
+        headers = list(string.ascii_lowercase)
+        random.shuffle(headers)
+
+        data = [
+                OrderedDict([(header, 1) for header in headers]),
+                OrderedDict([(header, 2) for header in headers]),
+                OrderedDict([(header, 3) for header in headers]),
+                OrderedDict([(header, 4) for header in headers]),
+                OrderedDict([(header, 5) for header in headers]),
+        ]
+        table = rows.import_from_dicts(data)
+        self.assertEqual(table.field_names, headers)
+
     def test_export_to_dicts(self):
-        table = rows.import_from_dicts(self.data)
+        table = rows.import_from_dicts(self.data, lazy=False)
         result = rows.export_to_dicts(table)
         full_data = [
                 {'name': 'Álvaro',
