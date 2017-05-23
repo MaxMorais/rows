@@ -65,6 +65,7 @@ def import_from_csv(filename_or_fobj, encoding='utf-8', dialect=None,
 
     reader = unicodecsv.reader(fobj, encoding=encoding, dialect=dialect)
 
+    kwargs['lazy'] = kwargs.get('lazy', True)
     meta = {'imported_from': 'csv',
             'filename': filename,
             'encoding': encoding,}
@@ -90,6 +91,7 @@ def export_to_csv(table, filename_or_fobj=None, encoding='utf-8',
 
     writer = unicodecsv.writer(fobj, encoding=encoding, dialect=dialect)
     for row in serialize(table, *args, **kwargs):
+        # TODO: may add some callback here
         writer.writerow(row)
 
     if filename_or_fobj is not None:

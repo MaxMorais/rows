@@ -66,6 +66,7 @@ class PluginCsvTestCase(utils.RowsTestMixIn, unittest.TestCase):
         self.assertEqual(result, 42)
 
         call = mocked_create_table.call_args
+        kwargs['lazy'] = True
         kwargs['meta'] = {'imported_from': 'csv',
                           'filename': self.filename,
                           'encoding': 'utf-8',}
@@ -127,7 +128,7 @@ class PluginCsvTestCase(utils.RowsTestMixIn, unittest.TestCase):
         with open(filename, 'wb') as fobj:
             fobj.write(data.encode('utf-8'))
 
-        table = rows.import_from_csv(filename, encoding='utf-8')
+        table = rows.import_from_csv(filename, encoding='utf-8', lazy=False)
         self.assertEqual(table.field_names, ['field1samefield', 'field2other'])
         self.assertEqual(table[0].field1samefield, 'row1value1')
         self.assertEqual(table[0].field2other, 'row1value2')
@@ -156,7 +157,7 @@ class PluginCsvTestCase(utils.RowsTestMixIn, unittest.TestCase):
             })
         rows.export_to_csv(table, filename, encoding=encoding)
 
-        table = rows.import_from_csv(filename, encoding=encoding)
+        table = rows.import_from_csv(filename, encoding=encoding, lazy=False)
 
         self.assertEqual(table.field_names, ['jsoncolumn1', 'jsoncolumn2'])
         self.assertDictEqual(table[0].jsoncolumn1, {'a': 42})
@@ -185,7 +186,7 @@ class PluginCsvTestCase(utils.RowsTestMixIn, unittest.TestCase):
         self.files_to_delete.append(temp.name)
         rows.export_to_csv(utils.table, temp.name)
 
-        table = rows.import_from_csv(temp.name)
+        table = rows.import_from_csv(temp.name, lazy=False)
         self.assert_table_equal(table, utils.table)
 
         temp.file.seek(0)
@@ -200,7 +201,7 @@ class PluginCsvTestCase(utils.RowsTestMixIn, unittest.TestCase):
         self.files_to_delete.append(temp.name)
         rows.export_to_csv(utils.table, temp.file)
 
-        table = rows.import_from_csv(temp.name)
+        table = rows.import_from_csv(temp.name, lazy=False)
         self.assert_table_equal(table, utils.table)
 
     def test_issue_168(self):
@@ -214,7 +215,7 @@ class PluginCsvTestCase(utils.RowsTestMixIn, unittest.TestCase):
         table.append({'jsoncolumn': '{"python": 42}'})
         rows.export_to_csv(table, filename)
 
-        table2 = rows.import_from_csv(filename)
+        table2 = rows.import_from_csv(filename, lazy=False)
         self.assert_table_equal(table, table2)
 
     def test_quotes(self):
@@ -243,7 +244,7 @@ class PluginCsvTestCase(utils.RowsTestMixIn, unittest.TestCase):
             })
         rows.export_to_csv(table, filename)
 
-        table2 = rows.import_from_csv(filename)
+        table2 = rows.import_from_csv(filename, lazy=False)
         self.assert_table_equal(table, table2)
 
     def test_export_to_csv_accepts_dialect(self):
