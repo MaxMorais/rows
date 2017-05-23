@@ -61,6 +61,7 @@ class PluginSqliteTestCase(utils.RowsTestMixIn, unittest.TestCase):
         self.assertEqual(result, 42)
 
         call = mocked_create_table.call_args
+        kwargs['lazy'] = True
         kwargs['meta'] = {'imported_from': 'sqlite',
                           'filename': self.filename, }
         self.assertEqual(call[1], kwargs)
@@ -98,8 +99,20 @@ class PluginSqliteTestCase(utils.RowsTestMixIn, unittest.TestCase):
         self.files_to_delete.append(temp.name)
         rows.export_to_sqlite(utils.table, temp.name)
 
-        table = rows.import_from_sqlite(temp.name)
+        table = rows.import_from_sqlite(temp.name, lazy=False)
         self.assert_table_equal(table, utils.table)
+
+    @mock.patch('rows.plugins.sqlite.create_table')
+    def test_import_Lazy(self, mocked_create_table):
+        connection = mock.Mock()
+        cursor = connection.cursor()
+        cursor.description = [('f1', None), ('f2', None), ('f3', None)]
+        gen = utils.LazyGenerator(max_number=1000)
+        cursor.fetchall.return_value = gen
+
+        table = rows.import_from_sqlite(connection)
+
+        self.assertIs(gen.last, None)
 
     def test_export_to_sqlite_connection(self):
         # TODO: may test file contents
@@ -109,7 +122,7 @@ class PluginSqliteTestCase(utils.RowsTestMixIn, unittest.TestCase):
         rows.export_to_sqlite(utils.table, connection)
         connection.close()
 
-        table = rows.import_from_sqlite(temp.name)
+        table = rows.import_from_sqlite(temp.name, lazy=False)
         self.assert_table_equal(table, utils.table)
 
     def test_export_to_sqlite_create_unique_table_name(self):
@@ -123,10 +136,10 @@ class PluginSqliteTestCase(utils.RowsTestMixIn, unittest.TestCase):
         rows.export_to_sqlite(first_table, temp.name)  # table1
         rows.export_to_sqlite(second_table, temp.name)  # table2
 
-        result_first_table = rows.import_from_sqlite(temp.name,
-                                                     table_name='table1')
-        result_second_table = rows.import_from_sqlite(temp.name,
-                                                      table_name='table2')
+        result_first_table = rows.import_from_sqlite(
+                temp.name, table_name='table1', lazy=False)
+        result_second_table = rows.import_from_sqlite(
+                temp.name, table_name='table2', lazy=False)
         self.assert_table_equal(result_first_table, first_table)
         self.assert_table_equal(result_second_table, second_table)
 
@@ -138,7 +151,8 @@ class PluginSqliteTestCase(utils.RowsTestMixIn, unittest.TestCase):
         rows.export_to_sqlite(utils.table, temp.name, table_name='rows')
         rows.export_to_sqlite(utils.table, temp.name, table_name='rows')
 
-        result_table = rows.import_from_sqlite(temp.name, table_name='rows')
+        result_table = rows.import_from_sqlite(
+                temp.name, table_name='rows', lazy=False)
 
         self.assertEqual(len(result_table), 2 * len(utils.table))
         self.assert_table_equal(result_table, utils.table + utils.table)
@@ -186,7 +200,7 @@ class PluginSqliteTestCase(utils.RowsTestMixIn, unittest.TestCase):
         table.append({'jsoncolumn': '{"python": 42}'})
         rows.export_to_sqlite(table, filename)
 
-        table2 = rows.import_from_sqlite(filename)
+        table2 = rows.import_from_sqlite(filename, lazy=False)
         self.assert_table_equal(table, table2)
 
     def test_import_from_sqlite_query_args(self):
