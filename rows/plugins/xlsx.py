@@ -77,6 +77,9 @@ def import_from_xlsx(filename_or_fobj, sheet_name=None, sheet_index=0,
                   for row_index in range(start_row, end_row + 1)]
 
     filename, _ = get_filename_and_fobj(filename_or_fobj, dont_open=True)
+
+    # XXX: What if kwargs['lazy'] is True? Should raise an exception?
+    kwargs['lazy'] = False
     metadata = {'imported_from': 'xlsx',
                 'filename': filename,
                 'sheet_name': sheet_name, }

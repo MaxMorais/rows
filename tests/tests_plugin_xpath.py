@@ -47,9 +47,11 @@ class PluginXPathTestCase(utils.RowsTestMixIn, unittest.TestCase):
                 ('website', './/div[@class="spField field_sitio_web"]/text()'),
                 ('email', './/div[@class="spField field_email"]/text()'), ])
         self.kwargs = {'rows_xpath': rows_xpath,
-                       'fields_xpath': fields_xpath, }
+                       'fields_xpath': fields_xpath,
+                       'lazy': False, }
 
-        self.expected_table = rows.import_from_csv(self.expected_data)
+        self.expected_table = rows.import_from_csv(self.expected_data,
+                                                   lazy=False)
         self.files_to_delete = []
 
     def test_imports(self):
@@ -71,7 +73,7 @@ class PluginXPathTestCase(utils.RowsTestMixIn, unittest.TestCase):
         fobj = temp.file
         rows.export_to_csv(table, fobj)
         fobj.seek(0)
-        table = rows.import_from_csv(fobj)
+        table = rows.import_from_csv(fobj, lazy=False)
 
         self.assert_table_equal(table, self.expected_table)
 
@@ -92,7 +94,7 @@ class PluginXPathTestCase(utils.RowsTestMixIn, unittest.TestCase):
         fobj = temp.file
         rows.export_to_csv(table, fobj)
         fobj.seek(0)
-        table = rows.import_from_csv(fobj)
+        table = rows.import_from_csv(fobj, lazy=False)
 
         self.assert_table_equal(table, self.expected_table)
 
@@ -107,9 +109,10 @@ class PluginXPathTestCase(utils.RowsTestMixIn, unittest.TestCase):
         fields_xpath = OrderedDict([('name', './/text()'),
                                     ('link', './/a/@href')])
         table = rows.import_from_xpath(BytesIO(html),
+                                       encoding='utf-8',
                                        rows_xpath=rows_xpath,
                                        fields_xpath=fields_xpath,
-                                       encoding='utf-8')
+                                       lazy=False)
         self.assertEqual(table[0].name, 'Abadia de Goiás (GO)')
         self.assertEqual(table[1].name, 'Abadiânia (GO)')
 
@@ -130,6 +133,7 @@ class PluginXPathTestCase(utils.RowsTestMixIn, unittest.TestCase):
         kwargs['meta'] = {'imported_from': 'xpath',
                           'filename': self.filename,
                           'encoding': encoding, }
+        kwargs['lazy'] = False
         self.assertEqual(call[1], kwargs)
 
     def test_xpath_must_be_text_type(self):

@@ -76,6 +76,8 @@ def import_from_xpath(filename_or_fobj, rows_xpath, fields_xpath,
     row_data = _get_row_data(fields_xpath)
     result_rows = list(map(row_data, row_elements))
 
+    # XXX: What if kwargs['lazy'] is True? Should raise an exception?
+    kwargs['lazy'] = False
     meta = {'imported_from': 'xpath',
             'filename': filename,
             'encoding': encoding,}

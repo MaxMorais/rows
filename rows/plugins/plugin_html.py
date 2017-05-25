@@ -92,6 +92,8 @@ def import_from_html(filename_or_fobj, encoding='utf-8', index=0,
     if ignore_colspan:
         table_rows = [row for row in table_rows if len(row) == max_columns]
 
+    # XXX: What if kwargs['lazy'] is True? Should raise an exception?
+    kwargs['lazy'] = False
     meta = {'imported_from': 'html',
             'filename': filename,
             'encoding': encoding,}
@@ -106,6 +108,7 @@ def export_to_html(table, filename_or_fobj=None, encoding='utf-8', *args,
     header = ['      <th> {} </th>\n'.format(field) for field in fields]
     result.extend(header)
     result.extend(['    </tr>\n', '  </thead>\n', '\n', '  <tbody>\n', '\n'])
+    # TODO: could be lazy so we don't need to store the whole table into memory
     for index, row in enumerate(serialized_table, start=1):
         css_class = 'odd' if index % 2 == 1 else 'even'
         result.append('    <tr class="{}">\n'.format(css_class))

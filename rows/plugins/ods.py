@@ -103,5 +103,9 @@ def import_from_ods(filename_or_fobj, index=0, *args, **kwargs):
 
     max_length = max(len(row) for row in table_rows)
     full_rows = complete_with_None(table_rows, max_length)
+
+    # XXX: What if kwargs['lazy'] is True? Should raise an exception?
+    kwargs['lazy'] = False
     meta = {'imported_from': 'ods', 'filename': filename,}
+
     return create_table(full_rows, meta=meta, *args, **kwargs)

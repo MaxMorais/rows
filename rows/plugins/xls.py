@@ -150,6 +150,8 @@ def import_from_xls(filename_or_fobj, sheet_name=None, sheet_index=0,
                    for column_index in range(start_column, sheet.ncols)]
                   for row_index in range(start_row, sheet.nrows)]
 
+    # XXX: What if kwargs['lazy'] is True? Should raise an exception?
+    kwargs['lazy'] = False
     meta = {'imported_from': 'xls',
             'filename': filename,
             'sheet_name': sheet.name, }

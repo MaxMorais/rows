@@ -53,6 +53,7 @@ class PluginXlsxTestCase(utils.RowsTestMixIn, unittest.TestCase):
         self.assertEqual(result, 42)
 
         call = mocked_create_table.call_args
+        kwargs['lazy'] = False
         kwargs['meta'] = {'imported_from': 'xlsx',
                           'filename': self.filename,
                           'sheet_name': 'Sheet1',}
