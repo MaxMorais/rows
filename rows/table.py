@@ -67,6 +67,8 @@ class Table(MutableSequence):
         except ValueError, e:
             raise type(e)(e.message + u"\n Row {0}, column {1}".format( len(self._rows + 2), field_name ) )
         
+        return data
+        
     def append(self, row):
         """Add a row to the table. Should be a dict"""
 
