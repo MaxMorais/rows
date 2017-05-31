@@ -60,9 +60,13 @@ class Table(MutableSequence):
 
     def _make_row(self, row):
         # TODO: should be able to customize row type (namedtuple, dict etc.)
-        return [field_type.deserialize(row.get(field_name, None))
-                for field_name, field_type in self.fields.items()]
-
+        data = []
+        try:
+            for field_name, field_type in self.fields.items():
+                data.append(field_type.deserialize(row.get(field_name, None))
+        except ValueError, e:
+            raise type(e)(e.message + u"\n Row {0}, column {1}".format( len(self._rows + 2), field_name ) )
+        
     def append(self, row):
         """Add a row to the table. Should be a dict"""
 
